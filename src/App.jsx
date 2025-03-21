@@ -1,19 +1,28 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import Login from './pages/Login';
-import Home from './pages/Home';
+import React from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import Login from "./pages/Login";
+import Home from "./pages/Home";
+import { isAuthenticated } from "./services/auth";
 
-const PrivateRoute = ({ children }) => {
-  const token = localStorage.getItem('token');
-  return token ? children : <Navigate to="/" />;
-};
-
-export default function App() {
+function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/home" element={<PrivateRoute><Home /></PrivateRoute>} />
+        <Route
+          path="/"
+          element={
+            isAuthenticated() ? <Navigate to="/home" /> : <Login />
+          }
+        />
+        <Route
+          path="/home"
+          element={
+            isAuthenticated() ? <Home /> : <Navigate to="/" />
+          }
+        />
       </Routes>
     </BrowserRouter>
-);
+  );
+}
+
+export default App;
