@@ -1,19 +1,24 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
-import Home from "./pages/Home";
-import { isAuthenticated } from "./services/auth";
+import Dashboard from "./pages/Dashboard";
 
-export default function App() {
+const isAuthenticated = () => {
+  return !!localStorage.getItem("access_token");
+};
+
+function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Login />} />
         <Route
-          path="/home"
-          element={isAuthenticated() ? <Home /> : <Navigate to="/" />}
+          path="/dashboard"
+          element={isAuthenticated() ? <Dashboard /> : <Navigate to="/" />}
         />
       </Routes>
     </BrowserRouter>
   );
 }
+
+export default App;

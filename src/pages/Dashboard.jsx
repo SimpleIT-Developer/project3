@@ -1,45 +1,46 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 
-export default function Dashboard() {
+const Dashboard = () => {
   const [branches, setBranches] = useState([]);
   const [filter, setFilter] = useState("");
-  const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) return navigate("/login");
-
-    fetch("http://erp-simpleit.sytes.net:8051/api/framework/v1/Branches", {
-      headers: {
-        Authorization: `Bearer ${token}`
+    const fetchBranches = async () => {
+      const token = localStorage.getItem("access_token");
+      try {
+        const response = await axios.get("http://erp-simpleit.sytes.net:8051/api/framework/v1/Branches", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setBranches(response.data.items || []);
+      } catch (error) {
+        console.error("Erro ao buscar filiais", error);
       }
-    })
-      .then(res => res.json())
-      .then(data => setBranches(data))
-      .catch(err => {
-        console.error(err);
-        localStorage.removeItem("token");
-        navigate("/login");
-      });
+    };
+
+    fetchBranches();
   }, []);
 
-  const filtered = branches.filter(b =>
-    b.Description.toLowerCase().includes(filter.toLowerCase())
+  const filtered = branches.filter((item) =>
+    item.Description.toLowerCase().includes(filter.toLowerCase())
   );
 
   return (
     <div style={{ padding: 20 }}>
       <h2>Filiais</h2>
       <input
-        placeholder="Filtrar por Descrição"
+        type="text"
+        placeholder="Filtrar por nome"
         value={filter}
-        onChange={e => setFilter(e.target.value)}
+        onChange={(e) => setFilter(e.target.value)}
+        style={{ marginBottom: 10, padding: 8 }}
       />
-      <table border="1" cellPadding={8} style={{ marginTop: 10 }}>
+      <table border="1" cellPadding="10" cellSpacing="0">
         <thead>
           <tr>
-            <th>Código</th>
+            <th>Código da Filial</th>
             <th>Descrição</th>
             <th>Cidade</th>
             <th>Estado</th>
@@ -47,17 +48,19 @@ export default function Dashboard() {
           </tr>
         </thead>
         <tbody>
-          {filtered.map(branch => (
-            <tr key={branch.Code}>
-              <td>{branch.Code}</td>
-              <td>{branch.Description}</td>
-              <td>{branch.City}</td>
-              <td>{branch.State}</td>
-              <td>{branch.CGC}</td>
+          {filtered.map((item) => (
+            <tr key={item.Code}>
+              <td>{item.Code}</td>
+              <td>{item.Description}</td>
+              <td>{item.City}</td>
+              <td>{item.State}</td>
+              <td>{item.CGC}</td>
             </tr>
           ))}
         </tbody>
       </table>
     </div>
   );
-}
+};
+
+export default Dashboard;

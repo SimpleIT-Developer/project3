@@ -1,82 +1,99 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
-export default function Login() {
-  const [email, setEmail] = useState("");
-  const [senha, setSenha] = useState("");
-  const [erro, setErro] = useState("");
+const Login = () => {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = () => {
-    if (email === "admin" && senha === "123") {
-      localStorage.setItem("token", "meu-token");
-      navigate("/home");
-    } else {
-      setErro("Usuário ou senha inválidos");
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    try {
+      const response = await axios.post(
+        "http://erp-simpleit.sytes.net:8051/api/connect/token",
+        {
+          username,
+          password,
+        },
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+
+      const { access_token } = response.data;
+      if (access_token) {
+        localStorage.setItem("access_token", access_token);
+        navigate("/dashboard");
+      } else {
+        setError("Usuário ou senha inválidos.");
+      }
+    } catch (err) {
+      setError("Usuário ou senha inválidos.");
     }
   };
 
   return (
     <div style={styles.container}>
-      <div style={styles.box}>
+      <form onSubmit={handleLogin} style={styles.form}>
         <h2>Login</h2>
         <input
           type="text"
           placeholder="Usuário"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
           style={styles.input}
         />
         <input
           type="password"
           placeholder="Senha"
-          value={senha}
-          onChange={(e) => setSenha(e.target.value)}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
           style={styles.input}
         />
-        <button onClick={handleLogin} style={styles.button}>
-          Entrar
-        </button>
-        {erro && <p style={styles.erro}>{erro}</p>}
-      </div>
+        <button type="submit" style={styles.button}>Entrar</button>
+        {error && <p style={styles.error}>{error}</p>}
+      </form>
     </div>
   );
-}
+};
 
 const styles = {
   container: {
     display: "flex",
-    height: "100vh",
-    justifyContent: "center",
     alignItems: "center",
-    background: "#f0f0f0",
+    justifyContent: "center",
+    height: "100vh",
   },
-  box: {
-    background: "#fff",
-    padding: 30,
-    borderRadius: 10,
+  form: {
+    display: "flex",
+    flexDirection: "column",
+    width: 300,
+    padding: 20,
+    backgroundColor: "#fff",
+    borderRadius: 8,
     boxShadow: "0 0 10px rgba(0,0,0,0.1)",
-    textAlign: "center",
   },
   input: {
-    display: "block",
-    width: "100%",
+    marginBottom: 10,
     padding: 10,
-    marginBottom: 15,
     fontSize: 16,
   },
   button: {
     padding: 10,
-    width: "100%",
     fontSize: 16,
-    background: "#333",
+    backgroundColor: "#4CAF50",
     color: "#fff",
     border: "none",
-    borderRadius: 5,
     cursor: "pointer",
   },
-  erro: {
-    marginTop: 10,
+  error: {
     color: "red",
+    marginTop: 10,
   },
 };
+
+export default Login;
