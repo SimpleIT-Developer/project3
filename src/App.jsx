@@ -1,24 +1,20 @@
+import React from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import LoginPage from "./pages/LoginPage";
+import BranchesPage from "./pages/BranchesPage";
 
-import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
+function App() {
+  const isAuthenticated = !!localStorage.getItem("token");
 
-const PrivateRoute = ({ children }) => {
-  const token = localStorage.getItem('access_token');
-  return token ? children : <Navigate to="/login" />;
-};
-
-export default function App() {
   return (
     <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/dashboard" element={
-        <PrivateRoute>
-          <Dashboard />
-        </PrivateRoute>
-      } />
-      <Route path="*" element={<Navigate to="/login" />} />
+      <Route path="/" element={<LoginPage />} />
+      <Route
+        path="/branches"
+        element={isAuthenticated ? <BranchesPage /> : <Navigate to="/" />}
+      />
     </Routes>
   );
 }
+
+export default App;
