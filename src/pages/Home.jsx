@@ -1,72 +1,61 @@
-
-import React, { useEffect, useState } from 'react'
-import axios from 'axios'
-import { useNavigate } from 'react-router-dom'
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 
 export default function Home() {
-  const [branches, setBranches] = useState([])
-  const [filter, setFilter] = useState('')
-  const navigate = useNavigate()
-
-  const token = localStorage.getItem('access_token')
+  const [data, setData] = useState([]);
+  const [filtro, setFiltro] = useState('');
 
   useEffect(() => {
-    if (!token) {
-      navigate('/')
-      return
-    }
-
     const fetchData = async () => {
       try {
-        const res = await axios.get('http://erp-simpleit.sytes.net:8051/api/framework/v1/Branches', {
+        const token = localStorage.getItem('token');
+        const response = await axios.get('http://erp-simpleit.sytes.net:8051/api/framework/v1/Branches', {
           headers: {
             Authorization: `Bearer ${token}`
           }
-        })
-        setBranches(res.data)
-      } catch {
-        localStorage.removeItem('access_token')
-        navigate('/')
+        });
+        setData(response.data);
+      } catch (err) {
+        console.error('Erro ao buscar dados', err);
       }
-    }
+    };
+    fetchData();
+  }, []);
 
-    fetchData()
-  }, [])
-
-  const filtered = branches.filter((b) =>
-    b.Description?.toLowerCase().includes(filter.toLowerCase())
-  )
+  const filtrado = data.filter(item => item.Description?.toLowerCase().includes(filtro.toLowerCase()));
 
   return (
-    <div style={{ padding: 20 }}>
+    <div style={{ padding: '20px' }}>
       <h2>Filiais</h2>
       <input
+        type="text"
         placeholder="Filtrar por nome"
-        value={filter}
-        onChange={(e) => setFilter(e.target.value)}
+        value={filtro}
+        onChange={(e) => setFiltro(e.target.value)}
+        style={{ marginBottom: '10px' }}
       />
-      <table border="1" cellPadding="5" style={{ marginTop: 10 }}>
+      <table border="1" cellPadding="6">
         <thead>
           <tr>
-            <th>Code</th>
-            <th>Description</th>
-            <th>City</th>
-            <th>State</th>
+            <th>Código da Filial</th>
+            <th>Descrição</th>
+            <th>Cidade</th>
+            <th>Estado</th>
             <th>CGC</th>
           </tr>
         </thead>
         <tbody>
-          {filtered.map((b) => (
-            <tr key={b.Code}>
-              <td>{b.Code}</td>
-              <td>{b.Description}</td>
-              <td>{b.City}</td>
-              <td>{b.State}</td>
-              <td>{b.CGC}</td>
+          {filtrado.map((item, index) => (
+            <tr key={index}>
+              <td>{item.Code}</td>
+              <td>{item.Description}</td>
+              <td>{item.City}</td>
+              <td>{item.State}</td>
+              <td>{item.CGC}</td>
             </tr>
           ))}
         </tbody>
       </table>
     </div>
-  )
+  );
 }

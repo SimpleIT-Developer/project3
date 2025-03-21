@@ -1,40 +1,36 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
-const Login = () => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+export default function Login() {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleLogin = async () => {
-    const formData = new URLSearchParams();
-    formData.append("username", username);
-    formData.append("password", password);
-
+  const handleLogin = async (e) => {
+    e.preventDefault();
     try {
-      const response = await fetch("http://erp-simpleit.sytes.net:8051/api/connect/token", {
-        method: "POST",
+      const response = await axios.post('http://erp-simpleit.sytes.net:8051/api/connect/token', {}, {
         headers: {
-          "Content-Type": "application/x-www-form-urlencoded"
-        },
-        body: formData
+          username,
+          password
+        }
       });
-
-      if (!response.ok) throw new Error("Usuário ou senha inválidos");
-
-      const data = await response.json();
-      localStorage.setItem("token", data.access_token);
-      navigate("/grid");
+      localStorage.setItem('token', response.data.access_token);
+      navigate('/home');
     } catch (err) {
-      setError(err.message);
+      setError('Usuário ou senha inválido');
     }
   };
 
   return (
-    <div className="login-container">
-      <div className="login-box">
-        <h2>Login</h2>
+    <div style={{
+      display: 'flex', justifyContent: 'center', alignItems: 'center',
+      height: '100vh', flexDirection: 'column'
+    }}>
+      <h2>Login</h2>
+      <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', width: '250px' }}>
         <input
           type="text"
           placeholder="Usuário"
@@ -47,11 +43,9 @@ const Login = () => {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-        <button onClick={handleLogin}>Entrar</button>
-        {error && <p className="error">{error}</p>}
-      </div>
+        <button type="submit">Entrar</button>
+        {error && <p style={{ color: 'red' }}>{error}</p>}
+      </form>
     </div>
   );
-};
-
-export default Login;
+}
